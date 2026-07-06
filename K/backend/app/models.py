@@ -15,9 +15,6 @@ class User(Base):
     name = Column(String(100), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # 비밀번호 찾기(재설정)용 - 토큰과 만료시각
-    reset_token = Column(String(255), nullable=True)
-    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
 
     records = relationship("Record", back_populates="user", cascade="all, delete-orphan")
 

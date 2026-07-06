@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from app.database import Base, engine
-from app.routers import auth, records, users
+from app import auth, records, users
 
 # 테이블이 없으면 생성 (이미 있으면 아무 일도 안 함)
 Base.metadata.create_all(bind=engine)
