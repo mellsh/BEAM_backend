@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr
 
@@ -88,3 +88,11 @@ class RecordResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+class MonthlyEmotionCount(BaseModel):
+    category: str
+    count: int
+
+class MonthlyEmotionResponse(BaseModel):
+    month: str  # "2026-07" 형태
+    emotions: List[MonthlyEmotionCount]

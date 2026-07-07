@@ -1,98 +1,3 @@
-# from typing import List
-
-# from fastapi import APIRouter, Depends, HTTPException
-# from sqlalchemy.orm import Session
-
-# from app import models, schemas
-# from app.deps import get_current_user, get_db
-
-# router = APIRouter(prefix="/records", tags=["records"])
-
-
-# def _get_owned_record_or_404(
-#     record_id: int, db: Session, current_user: models.User
-# ) -> models.Record:
-#     record = db.query(models.Record).filter(models.Record.id == record_id).first()
-#     if not record:
-#         raise HTTPException(status_code=404, detail="존재하지 않는 게시글입니다.")
-#     if record.user_id != current_user.id:
-#         # 남의 글은 아예 존재 여부도 알려주지 않기 위해 404로 통일
-#         raise HTTPException(status_code=404, detail="존재하지 않는 게시글입니다.")
-#     return record
-
-
-# @router.post("/{record_id}", response_model=schemas.RecordResponse)
-# def create_record(
-#     payload: schemas.RecordCreateRequest,
-#     db: Session = Depends(get_db),
-#     current_user: models.User = Depends(get_current_user),
-# ):
-#     # 로그인한 유저의 id를 그대로 user_id에 사용 (프론트에서 안 보내도 됨)
-#     record = models.Record(
-#         user_id=current_user.id,
-#         content=payload.content,
-#         category=payload.category,
-#     )
-#     db.add(record)
-#     db.commit()
-#     db.refresh(record)
-#     return record
-
-
-# @router.get("/{record_id}", response_model=List[schemas.RecordResponse])
-# def list_my_records(
-#     db: Session = Depends(get_db),
-#     current_user: models.User = Depends(get_current_user),
-# ):
-#     return (
-#         db.query(models.Record)
-#         .filter(models.Record.user_id == current_user.id)
-#         .order_by(models.Record.created_at.desc())
-#         .all()
-#     )
-
-
-# @router.get("/{record_id}", response_model=schemas.RecordResponse)
-# def get_record(
-#     record_id: int,
-#     db: Session = Depends(get_db),
-#     current_user: models.User = Depends(get_current_user),
-# ):
-#     return _get_owned_record_or_404(record_id, db, current_user)
-
-
-# @router.patch("/{record_id}", response_model=schemas.RecordResponse)
-# def update_record(
-#     record_id: int,
-#     payload: schemas.RecordUpdateRequest,
-#     db: Session = Depends(get_db),
-#     current_user: models.User = Depends(get_current_user),
-# ):
-#     record = _get_owned_record_or_404(record_id, db, current_user)
-
-#     # 보낸 필드만 수정
-#     if payload.content is not None:
-#         record.content = payload.content
-#     if payload.category is not None:
-#         record.category = payload.category
-
-#     db.commit()
-#     db.refresh(record)
-#     return record
-
-
-# @router.delete("/{record_id}", response_model=schemas.MessageResponse)
-# def delete_record(
-#     record_id: int,
-#     db: Session = Depends(get_db),
-#     current_user: models.User = Depends(get_current_user),
-# ):
-#     record = _get_owned_record_or_404(record_id, db, current_user)
-#     db.delete(record)
-#     db.commit()
-#     return schemas.MessageResponse(message="삭제되었습니다.")
-
-
 import os
 from typing import List
 
@@ -103,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.deps import get_current_user, get_db
+from sqlalchemy import func
 
 # 환경 변수 로드 및 Groq 클라이언트 초기화
 load_dotenv()
@@ -223,3 +129,45 @@ def delete_record(
     db.delete(record)
     db.commit()
     return schemas.MessageResponse(message="삭제되었습니다.")
+
+@router.get("/stats/monthly", response_model=List[schemas.MonthlyEmotionResponse])
+def get_monthly_emotion_stats(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """
+    현재 로그인한 유저의 게시글들을 월별로 묶어 
+    각 월에 어떤 감정이 몇 개씩 발생했는지 통계를 반환합니다.
+    """
+    # 1. MySQL에서 월별, 감정별로 Group By 하여 개수(COUNT) 집계
+    # 결과 형태 예시: [("2026-07", "행복", 5), ("2026-07", "슬픔", 2), ("2026-06", "우울", 4)]
+    raw_stats = (
+        db.query(
+            func.date_format(models.Record.created_at, "%Y-%m").label("month"),
+            models.Record.category,
+            func.count(models.Record.id).label("count")
+        )
+        .filter(models.Record.user_id == current_user.id)
+        .group_by(func.date_format(models.Record.created_at, "%Y-%m"), models.Record.category)
+        .order_by(func.date_format(models.Record.created_at, "%Y-%m").desc(), func.count(models.Record.id).desc())
+        .all()
+    )
+
+    # 2. 데이터베이스 결과를 프론트엔드가 쓰기 좋은 트리 구조(JSON)로 가공
+    # { "2026-07": [{"category": "행복", "count": 5}, {"category": "슬픔", "count": 2}] }
+    formatted_dict = {}
+    for month, category, count in raw_stats:
+        if month not in formatted_dict:
+            formatted_dict[month] = []
+        formatted_dict[month].append({
+            "category": category,
+            "count": count
+        })
+
+    # 3. Pydantic 응답 스키마 리스트 형태로 변환하여 반환
+    result = [
+        schemas.MonthlyEmotionResponse(month=month, emotions=emotions)
+        for month, emotions in formatted_dict.items()
+    ]
+    
+    return result
