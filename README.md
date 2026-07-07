@@ -152,12 +152,12 @@ Base URL
 
 | Method | Endpoint | Description |
 |---------|----------|-------------|
-| POST | `/auth/signup` | 회원가입 |
-| POST | `/auth/login` | 로그인 |
-| POST | `/auth/google-login` | Google 로그인 |
-| GET | `/auth/user` | 내 정보 조회 |
-| POST | `/auth/forgot-password` | 비밀번호 재설정 요청 |
-| POST | `/auth/reset-password` | 비밀번호 재설정 |
+| POST | `/signup` | 회원가입 |
+| POST | `/login` | 로그인 |
+| POST | `/google-login` | Google 로그인 |
+| GET | `/user` | 내 정보 조회 |
+| POST | `/forgot-password` | 비밀번호 재설정 요청 |
+| POST | `/reset-password` | 비밀번호 재설정 |
 
 ---
 
@@ -171,12 +171,12 @@ Base URL
 
 | Method | Endpoint | Description |
 |---------|----------|-------------|
-| POST | `/records` | 감정 기록 작성 (AI 분석) |
-| GET | `/records` | 내 기록 조회 |
+| POST | `/` | 감정 기록 작성 (AI 분석) |
+| GET | `/` | 내 기록 조회 |
 | GET | `/reords/stats/monthly` | 월별 감정 통계 |
-| GET | `/records/{record_id}` | 기록 상세 조회 |
-| PATCH | `/records/{record_id}` | 기록 수정 |
-| DELETE | `/records/{record_id}` | 기록 삭제 |
+| GET | `/{record_id}` | 기록 상세 조회 |
+| PATCH | `/{record_id}` | 기록 수정 |
+| DELETE | `/{record_id}` | 기록 삭제 |
 
 ---
 
@@ -190,10 +190,10 @@ Base URL
 
 | Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/user/user` | 마이페이지 조회 |
-| PATCH | `/user/user` | 회원정보 수정 |
-| POST | `/user/user/change-password` | 비밀번호 변경 |
-| DELETE | `/user/user` | 회원 탈퇴 |
+| GET | `/user` | 마이페이지 조회 |
+| PATCH | `/user` | 회원정보 수정 |
+| POST | `/user/change-password` | 비밀번호 변경 |
+| DELETE | `/user` | 회원 탈퇴 |
 
 ---
 
