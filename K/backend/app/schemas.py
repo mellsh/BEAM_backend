@@ -71,7 +71,6 @@ class MessageResponse(BaseModel):
 
 class RecordCreateRequest(BaseModel):
     content: str
-    category: Optional[str] = None
 
 
 class RecordUpdateRequest(BaseModel):

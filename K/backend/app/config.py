@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        extra = "ignore"  # 👈 이 줄을 새로 추가해 주세요!
 
 
 settings = Settings()
