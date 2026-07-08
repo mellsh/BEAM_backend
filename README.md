@@ -195,6 +195,22 @@ Base URL
 | POST | `/user/change-password` | 비밀번호 변경 |
 | DELETE | `/user` | 회원 탈퇴 |
 
+
+
+---
+
+# Slogan API
+
+Base URL
+
+```
+/slogan
+```
+
+| Method | Endpoint | Description
+|---------|----------|-------------|
+| GET |              | 슬로건 가져오기 |
+
 ---
 
 # 🤖 AI Emotion Analysis
