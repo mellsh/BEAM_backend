@@ -285,3 +285,27 @@ FastAPI에서 자동 생성되는 API 문서를 제공합니다.
 **BEAM Team**
 
 AI Emotion Diary Backend Project
+
+# 월별 감정 조회 결과
+
+```bash
+[
+    {
+        "month": "2026-07",
+        "emotions": [
+            {
+                "category": "짜증",
+                "count": 2
+            },
+            {
+                "category": "행복",
+                "count": 1
+            },
+            {
+                "category": "외로움",
+                "count": 1
+            }
+        ]
+    }
+]
+```
